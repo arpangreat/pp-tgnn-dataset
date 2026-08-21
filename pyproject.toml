@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pp-tgnn"
+version = "0.1.0"
+description = "Detection-bias-corrected temporal event-stream pipeline and TGNN baseline for dynamic plant-pollinator link prediction"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "Moumita Ghosh" },
+    { name = "Anirban Mukhopadhyay", email = "anirban@klyuniv.ac.in" },
+]
+keywords = [
+    "temporal graph learning",
+    "dynamic link prediction",
+    "plant-pollinator networks",
+    "N-mixture model",
+    "detection bias",
+    "ecological network data",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "scipy>=1.10",
+    "matplotlib>=3.7",
+    "torch>=2.0",
+    "scikit-learn>=1.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "jupyter",
+    "nbconvert",
+    "ipykernel",
+]
+
+[project.urls]
+Repository = "https://github.com/REPLACE_ME/pp-tgnn-dataset"
+Paper = "https://andlter.forestry.oregonstate.edu/data/abstract.aspx?dbcode=SA026"
+
+[tool.setuptools.packages.find]
+where = ["src"]

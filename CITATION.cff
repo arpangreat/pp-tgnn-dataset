@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this dataset or pipeline, please cite the data paper below."
+title: "A Detection-Bias-Corrected Temporal Event-Stream Dataset for Dynamic Plant–Pollinator Link Prediction"
+type: dataset
+authors:
+  - family-names: "Ghosh"
+    given-names: "Moumita"
+    affiliation: "Dept. of Computer Science and Engineering, Kalyani University"
+  - family-names: "Mukhopadhyay"
+    given-names: "Anirban"
+    affiliation: "Dept. of Computer Science and Engineering, Kalyani University"
+    email: "anirban@klyuniv.ac.in"
+keywords:
+  - temporal graph learning
+  - dynamic link prediction
+  - plant-pollinator networks
+  - N-mixture model
+  - detection bias
+  - ecological network data
+license: MIT
+license-data: CC-BY-4.0
+repository-code: "https://github.com/REPLACE_ME/pp-tgnn-dataset"
+references:
+  - type: dataset
+    title: "Plant-pollinator interactions in Willamette National Forest meadows"
+    authors:
+      - name: "H.J. Andrews Experimental Forest LTER"
+    notes: "Environmental Data Initiative, data package knb-lter-and.5216"
+    url: "https://andlter.forestry.oregonstate.edu/data/abstract.aspx?dbcode=SA026"

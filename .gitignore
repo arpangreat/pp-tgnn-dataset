@@ -1,0 +1,39 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Raw and processed data — large / license-restricted, not checked in.
+# See data/raw/README.md for download instructions.
+data/raw/*.csv
+data/processed/*.csv
+data/processed/*.pt
+
+# Keep placeholder files
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Generated figures (reproducible via scripts/make_figure1.py)
+figures/*.png
+!figures/.gitkeep
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
