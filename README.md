@@ -35,7 +35,15 @@ Raw pollinator-watch visit counts underestimate true interaction frequency becau
 3. Computes a **phenology-based confidence weight** from flowering intensity.
 4. Assembles a **continuous-time weighted event stream** `(τ, plant_id, pollinator_id, c)` with a **leakage-safe chronological split** that correctly absorbs the multi-year survey gap.
 
-The result: **20,107 weighted interaction events** and **13,917 empirically grounded structural negatives**, directly usable with TGN, TGAT, JODIE, and related dynamic-link-prediction architectures — see `docs/data_dictionary.md` for the full schema.
+The result: **20,025 weighted interaction events** and **13,917 empirically grounded structural negatives** (1,389 at deduplicated watch-session granularity — see `docs/data_dictionary.md`), directly usable with TGN, TGAT, JODIE, and related dynamic-link-prediction architectures — see `docs/data_dictionary.md` for the full schema.
+
+> **Audit note:** as of this version, `config.py`'s N-mixture `lam_grid` has been
+> widened from `geomspace(0.01, 80, 150)` to `geomspace(0.01, 5000, 300)` (and
+> `n_trunc_extra` from 30 to 100). The original narrower grid silently capped
+> the posterior-mean λ̂ for 382/17,472 groups (2.2%) at the grid ceiling,
+> understating the true detection-corrected strength of the highest-abundance
+> interactions. See `docs/data_dictionary.md#known-structural-pitfalls` for
+> details and the numbers this changes.
 
 ---
 
@@ -116,7 +124,7 @@ jupyter lab notebooks/
 | TGNN baseline | `TGNNLite`, `TimeEncode` | `pp_tgnn/model.py` |
 | Training / evaluation loop | `run_epoch()`, `mrr_eval()` | `pp_tgnn/train.py` |
 
-All eight algorithms are validated end-to-end against small synthetic data in `tests/` (see below) and have been run against the real raw files with results matching the paper's reported summary statistics (p̂ ≈ 0.15, median P(N>0) ≈ 0.985, pair density ≈ 3.85%, median edge weight c ≈ 0.096).
+All eight algorithms are validated end-to-end against small synthetic data in `tests/` (see below) and have been run against the real raw files with results matching the paper's reported summary statistics (p̂ ≈ 0.15, median P(N>0) ≈ 0.985, pair density ≈ 3.85%, median edge weight c ≈ 0.053 — see the audit note above for why this differs from the earlier-reported 0.096).
 
 ---
 
