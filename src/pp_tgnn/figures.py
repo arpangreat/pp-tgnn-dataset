@@ -23,6 +23,13 @@ def _plot_events_per_year(ax: plt.Axes, events: pd.DataFrame) -> None:
     for bar, y in zip(bars, ALL_YEARS):
         if y in NO_SURVEY_YEARS:
             bar.set_hatch("//")
+    # Zero-height bars for the no-survey years are otherwise invisible in the
+    # rendered figure (nothing to hatch); shade the background across that
+    # span so the gap reads clearly even though there is nothing to plot.
+    no_survey_idx = [i for i, y in enumerate(ALL_YEARS) if y in NO_SURVEY_YEARS]
+    if no_survey_idx:
+        ax.axvspan(min(no_survey_idx) - 0.5, max(no_survey_idx) + 0.5,
+                   color="#d9d9d9", alpha=0.3, zorder=0)
 
     ax.set_xticks(range(len(ALL_YEARS)))
     ax.set_xticklabels(ALL_YEARS, rotation=45, ha="right")
