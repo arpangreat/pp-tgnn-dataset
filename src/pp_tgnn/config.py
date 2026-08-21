@@ -32,8 +32,15 @@ class PipelineConfig:
 
     # --- N-mixture fitting grids (Algorithm 4) ---
     p_grid: np.ndarray = field(default_factory=lambda: np.linspace(0.05, 0.95, 19))
-    lam_grid: np.ndarray = field(default_factory=lambda: np.geomspace(0.01, 80, 150))
-    n_trunc_extra: int = 30
+    # Widened from 80 -> 5000 (and 150 -> 300 grid points). The original
+    # ceiling silently capped lambda_hat for high-abundance groups: the raw
+    # data contains single-watch counts up to 1,770, and a candidate-lambda
+    # grid that doesn't reach far enough will pin the posterior mean at
+    # whatever the grid's top value happens to be, rather than the true
+    # value. This affected 382/17,472 groups (2.2%) at the original ceiling.
+    # See docs/data_dictionary.md "Known structural pitfalls" #3.
+    lam_grid: np.ndarray = field(default_factory=lambda: np.geomspace(0.01, 5000, 300))
+    n_trunc_extra: int = 100  # widened from 30 alongside the lambda-grid fix above
     max_informative_sample: int = 250
     rng_seed: int = 42
 
