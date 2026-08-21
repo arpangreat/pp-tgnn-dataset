@@ -1,6 +1,6 @@
 # A Detection-Bias-Corrected Temporal Event-Stream Dataset for Dynamic Plant–Pollinator Link Prediction
 
-[![CI](https://github.com/REPLACE_ME/pp-tgnn-dataset/actions/workflows/ci.yml/badge.svg)](https://github.com/REPLACE_ME/pp-tgnn-dataset/actions/workflows/ci.yml)
+[![CI](https://github.com/m0u/pp-tgnn-dataset/actions/workflows/ci.yml/badge.svg)](https://github.com/m0u/pp-tgnn-dataset/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/code-MIT-blue.svg)](LICENSE)
 [![Data License: CC BY 4.0](https://img.shields.io/badge/data-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 
@@ -52,7 +52,7 @@ The result: **20,025 weighted interaction events** and **13,917 empirically grou
 ### 1. Install
 
 ```bash
-git clone https://github.com/REPLACE_ME/pp-tgnn-dataset.git
+git clone https://github.com/m0u/pp-tgnn-dataset.git
 cd pp-tgnn-dataset
 python -m venv .venv && source .venv/bin/activate   # optional but recommended
 pip install -e .          # installs the pp_tgnn package (see pyproject.toml)

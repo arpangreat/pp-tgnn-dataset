@@ -6,9 +6,9 @@
 |---|---|---|
 | `plant_pollinator_events.csv` | 20,025 × 12 | Processed weighted positive event stream: `(τ, plant_id, pollinator_id, c)` plus intermediate confidence components and provenance columns. |
 | `plant_pollinator_negative_events.csv` | 13,917 × 4 | Structural negatives at raw minute-level row granularity (`PPI_STATUS = 0`). A deduplicated watch-session-level version (1,389 rows) is also available — see the note below. |
-| `events_train.csv` | 16,085 rows | Chronological training split (first 80% of events by cumulative τ). |
-| `events_val.csv` | 2,011 rows | Chronological validation split (next 10%). |
-| `events_test.csv` | 2,011 rows | Chronological test split (final 10%). |
+| `events_train.csv` | 16,020 rows | Chronological training split (first 80% of events by cumulative τ). |
+| `events_val.csv` | 2,002 rows | Chronological validation split (next 10%). |
+| `events_test.csv` | 2,003 rows | Chronological test split (final 10%). |
 | `lambda_hat.csv` | 17,472 rows | Posterior mean λ̂ for every (plot, year, plant, pollinator) group from the fitted N-mixture model — intermediate output, useful for reproducing Figure 1(b) or auditing detection-bias correction. |
 | `flw_conf.csv` | 23,642 rows | Harmonized flowering table augmented with `confidence_flowering` — intermediate output, needed for the structural-negative approximation in the TGN notebook. |
 
