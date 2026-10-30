@@ -1,12 +1,13 @@
 {
   "summary": {
-    "total_checks": 18,
-    "errors": 3,
-    "warnings": 7,
-    "info": 8
+    "total_checks": 27,
+    "errors": 2,
+    "warnings": 14,
+    "info": 11
   },
   "findings": [
     {
+      "target_dataset": "SA02601_v6.csv (Visitation)",
       "category": "Schema Integrity",
       "check_name": "SA02601_visitation_missing_columns",
       "severity": "INFO",
@@ -35,6 +36,7 @@
       }
     },
     {
+      "target_dataset": "SA02602_v5.csv (Flowering)",
       "category": "Schema Integrity",
       "check_name": "SA02602_flowering_missing_columns",
       "severity": "INFO",
@@ -54,40 +56,119 @@
       }
     },
     {
+      "target_dataset": "SA02601_v6.csv (Visitation)",
       "category": "Date Formatting & Consistency",
-      "check_name": "SA02601_visitation_date_year_consistency",
-      "severity": "ERROR",
-      "total_evaluated": 74942,
-      "discrepancy_count": 74942,
-      "discrepancy_pct": 100.0,
-      "description": "Format mismatch in SA02601_visitation: Expected format '%d-%m-%Y' failed on 74942 rows. Auto-detection identified actual raw format as '%Y-%m-%d' (100% match with 'YEAR').",
-      "impact": "Pipeline execution with default config '%d-%m-%Y' will immediately crash. Must set PipelineConfig.vis_date_fmt = '%Y-%m-%d'.",
-      "remediation": "Update PipelineConfig(vis_date_fmt='%Y-%m-%d') when running pipeline on this dataset version.",
-      "metadata": {
-        "expected_format": "%d-%m-%Y",
-        "detected_actual_format": "%Y-%m-%d",
-        "parse_failures": 74942,
-        "year_mismatches": 0
-      }
-    },
-    {
-      "category": "Date Formatting & Consistency",
-      "check_name": "SA02602_flowering_date_year_consistency",
+      "check_name": "SA02601_visitation_date_consistency",
       "severity": "INFO",
-      "total_evaluated": 23642,
+      "total_evaluated": 74942,
       "discrepancy_count": 0,
       "discrepancy_pct": 0.0,
-      "description": "Evaluated SA02602_flowering 'SAMPLEDATE' with format '%Y-%m-%d'. Failed parsing: 0. Contradicted 'YEAR': 0.",
-      "impact": "Silent date corruption; links events to incorrect field seasons or chronologies.",
-      "remediation": "Verify expected date format string ('%Y-%m-%d'). Remember SA02601 and SA02602 may have varying formats across EDI release versions.",
+      "description": "Dates in SA02601_visitation are 100% internally consistent: All 74,942 rows follow uniform 'YYYY-MM-DD' and match the recorded 'YEAR' column.",
+      "impact": "Clean; dates parse unambiguously.",
+      "remediation": "None required.",
       "metadata": {
-        "expected_format": "%Y-%m-%d",
-        "detected_actual_format": null,
+        "detected_patterns": [
+          "XXXX-XX-XX"
+        ],
         "parse_failures": 0,
         "year_mismatches": 0
       }
     },
     {
+      "target_dataset": "SA02602_v5.csv (Flowering)",
+      "category": "Date Formatting & Consistency",
+      "check_name": "SA02602_flowering_date_consistency",
+      "severity": "INFO",
+      "total_evaluated": 23642,
+      "discrepancy_count": 0,
+      "discrepancy_pct": 0.0,
+      "description": "Dates in SA02602_flowering are 100% internally consistent: All 23,642 rows follow uniform 'YYYY-MM-DD' and match the recorded 'YEAR' column.",
+      "impact": "Clean; dates parse unambiguously.",
+      "remediation": "None required.",
+      "metadata": {
+        "detected_patterns": [
+          "XXXX-XX-XX"
+        ],
+        "parse_failures": 0,
+        "year_mismatches": 0
+      }
+    },
+    {
+      "target_dataset": "SA02601_v6.csv (Visitation)",
+      "category": "Date Formatting & Consistency",
+      "check_name": "SA02601_visitation_watch_multi_date_splits",
+      "severity": "WARNING",
+      "total_evaluated": 4579,
+      "discrepancy_count": 37,
+      "discrepancy_pct": 0.808,
+      "description": "Found 37 watch sessions in SA02601_visitation that span multiple distinct calendar dates (0.81% of sessions). Sample: {\"('CNE03', 2012, 1.0)\": ['2012-07-09', '2012-07-10'], \"('CNE04', 2012, 1.0)\": ['2012-07-09', '2012-07-10'], \"('CNE05', 2012, 1.0)\": ['2012-07-09', '2012-07-10'], \"('CNE06', 2012, 1.0)\": ['2012-07-09', '2012-07-10'], \"('CNM06', 2012, 1.0)\": ['2012-07-09', '2012-07-10']}",
+      "impact": "Watch sessions split across days (e.g. due to weather delays) create ambiguous event timestamps.",
+      "remediation": "Assign the session's start date or aggregate observations at watch session granularity.",
+      "metadata": {
+        "multi_date_sessions_count": 37,
+        "sample_sessions": {
+          "('CNE03', 2012, 1.0)": [
+            "2012-07-09",
+            "2012-07-10"
+          ],
+          "('CNE04', 2012, 1.0)": [
+            "2012-07-09",
+            "2012-07-10"
+          ],
+          "('CNE05', 2012, 1.0)": [
+            "2012-07-09",
+            "2012-07-10"
+          ],
+          "('CNE06', 2012, 1.0)": [
+            "2012-07-09",
+            "2012-07-10"
+          ],
+          "('CNM06', 2012, 1.0)": [
+            "2012-07-09",
+            "2012-07-10"
+          ]
+        }
+      }
+    },
+    {
+      "target_dataset": "SA02602_v5.csv (Flowering)",
+      "category": "Date Formatting & Consistency",
+      "check_name": "SA02602_flowering_watch_multi_date_splits",
+      "severity": "WARNING",
+      "total_evaluated": 5602,
+      "discrepancy_count": 229,
+      "discrepancy_pct": 4.0878,
+      "description": "Found 229 watch sessions in SA02602_flowering that span multiple distinct calendar dates (4.09% of sessions). Sample: {\"('BGD03', 2011, 2.0)\": ['2011-07-24', '2011-07-25'], \"('BGD07', 2012, 2.0)\": ['2012-07-05', '2012-07-12'], \"('CNE01', 2011, 1.0)\": ['2011-07-21', '2011-07-22'], \"('CNE01', 2011, 4.0)\": ['2011-08-11', '2011-08-12'], \"('CNE02', 2011, 3.0)\": ['2011-08-04', '2011-08-05']}",
+      "impact": "Watch sessions split across days (e.g. due to weather delays) create ambiguous event timestamps.",
+      "remediation": "Assign the session's start date or aggregate observations at watch session granularity.",
+      "metadata": {
+        "multi_date_sessions_count": 229,
+        "sample_sessions": {
+          "('BGD03', 2011, 2.0)": [
+            "2011-07-24",
+            "2011-07-25"
+          ],
+          "('BGD07', 2012, 2.0)": [
+            "2012-07-05",
+            "2012-07-12"
+          ],
+          "('CNE01', 2011, 1.0)": [
+            "2011-07-21",
+            "2011-07-22"
+          ],
+          "('CNE01', 2011, 4.0)": [
+            "2011-08-11",
+            "2011-08-12"
+          ],
+          "('CNE02', 2011, 3.0)": [
+            "2011-08-04",
+            "2011-08-05"
+          ]
+        }
+      }
+    },
+    {
+      "target_dataset": "SA02601_v6.csv (Visitation)",
       "category": "Semantic Integrity",
       "check_name": "vis_ppi_status_valid_domain",
       "severity": "INFO",
@@ -100,6 +181,7 @@
       "metadata": {}
     },
     {
+      "target_dataset": "SA02601_v6.csv (Visitation)",
       "category": "Semantic Integrity",
       "check_name": "vis_pos_interaction_missing_species",
       "severity": "INFO",
@@ -112,6 +194,7 @@
       "metadata": {}
     },
     {
+      "target_dataset": "SA02601_v6.csv (Visitation)",
       "category": "Semantic Integrity",
       "check_name": "vis_neg_interaction_has_species",
       "severity": "INFO",
@@ -124,6 +207,7 @@
       "metadata": {}
     },
     {
+      "target_dataset": "SA02601_v6.csv (Visitation)",
       "category": "Semantic Integrity",
       "check_name": "vis_pos_missing_or_zero_visit_count",
       "severity": "WARNING",
@@ -136,6 +220,7 @@
       "metadata": {}
     },
     {
+      "target_dataset": "SA02602_v5.csv (Flowering)",
       "category": "Semantic Integrity",
       "check_name": "flw_negative_or_null_flower_count",
       "severity": "WARNING",
@@ -151,6 +236,7 @@
       }
     },
     {
+      "target_dataset": "Both (SA02601 vs SA02602)",
       "category": "Referential Integrity",
       "check_name": "unmatched_visited_plant_species",
       "severity": "INFO",
@@ -165,6 +251,7 @@
       }
     },
     {
+      "target_dataset": "Both (SA02601 vs SA02602)",
       "category": "Referential Integrity",
       "check_name": "visitation_watches_missing_flowering_survey",
       "severity": "WARNING",
@@ -177,6 +264,7 @@
       "metadata": {}
     },
     {
+      "target_dataset": "Both (SA02601 vs SA02602)",
       "category": "Referential Integrity",
       "check_name": "interactions_lacking_same_session_flowering",
       "severity": "WARNING",
@@ -189,6 +277,7 @@
       "metadata": {}
     },
     {
+      "target_dataset": "Both (SA02601 vs SA02602)",
       "category": "Spatial Hierarchy",
       "check_name": "plot_to_meadow_complex_inconsistency",
       "severity": "ERROR",
@@ -201,6 +290,23 @@
       "metadata": {}
     },
     {
+      "target_dataset": "Both (SA02601 vs SA02602)",
+      "category": "Date Formatting & Consistency",
+      "check_name": "cross_dataset_watch_date_mismatch",
+      "severity": "WARNING",
+      "total_evaluated": 4836,
+      "discrepancy_count": 2018,
+      "discrepancy_pct": 41.7287,
+      "description": "Found 2018 shared watch sessions (41.73%) where visitation and flowering surveys occurred on DIFFERENT calendar dates (offsets up to 20 days, median offset 1 day). Most common offset is +1 day (flowering surveyed the day after insect watches).",
+      "impact": "A naive inner join requiring SAMPLEDATE equality drops 41.7% of valid watch sessions.",
+      "remediation": "Join visitation and flowering on [PLOT_ID, YEAR, WATCH, PLTSP_CODE] without enforcing SAMPLEDATE equality.",
+      "metadata": {
+        "max_day_offset": 20,
+        "median_day_offset": 1.0
+      }
+    },
+    {
+      "target_dataset": "SA02601_v6.csv (Visitation)",
       "category": "Granularity & Aggregation",
       "check_name": "within_watch_minute_level_duplicates",
       "severity": "INFO",
@@ -216,6 +322,7 @@
       }
     },
     {
+      "target_dataset": "SA02601_v6.csv (Visitation)",
       "category": "Granularity & Aggregation",
       "check_name": "structural_negative_granularity_discrepancy",
       "severity": "WARNING",
@@ -231,6 +338,7 @@
       }
     },
     {
+      "target_dataset": "SA02601_v6.csv & Model Hyperparameters",
       "category": "Distributional Boundary",
       "check_name": "lambda_grid_capping_risk",
       "severity": "ERROR",
@@ -246,6 +354,7 @@
       }
     },
     {
+      "target_dataset": "SA02602_v5.csv (Flowering)",
       "category": "Distributional Boundary",
       "check_name": "degenerate_flowering_species",
       "severity": "WARNING",
@@ -299,6 +408,7 @@
       }
     },
     {
+      "target_dataset": "Both (Survey Sampling Horizon)",
       "category": "Temporal Continuity",
       "check_name": "calendar_year_gaps",
       "severity": "WARNING",
@@ -324,6 +434,197 @@
           2018,
           2021
         ]
+      }
+    },
+    {
+      "target_dataset": "SA02601_v6.csv (Visitation)",
+      "category": "Field Sparsity",
+      "check_name": "SA02601_visitation_highly_sparse_fields",
+      "severity": "INFO",
+      "total_evaluated": 26,
+      "discrepancy_count": 4,
+      "discrepancy_pct": 15.3846,
+      "description": "Fields where over 30% of records are missing or unrecorded: {'END_TIME': np.float64(89.99), 'TEMP': np.float64(38.03), 'REF_NO': np.float64(79.75), 'QC_NOTES': np.float64(95.15)}.",
+      "impact": "Downstream models cannot rely on these features without heavy imputation (e.g., TEMP 38% missing).",
+      "remediation": "Exclude highly sparse attributes from graph node/edge features or apply targeted imputation.",
+      "metadata": {
+        "sparse_columns_pct": {
+          "END_TIME": 89.99,
+          "TEMP": 38.03,
+          "REF_NO": 79.75,
+          "QC_NOTES": 95.15
+        }
+      }
+    },
+    {
+      "target_dataset": "SA02602_v5.csv (Flowering)",
+      "category": "Field Sparsity",
+      "check_name": "SA02602_flowering_highly_sparse_fields",
+      "severity": "INFO",
+      "total_evaluated": 16,
+      "discrepancy_count": 1,
+      "discrepancy_pct": 6.25,
+      "description": "Fields where over 30% of records are missing or unrecorded: {'QC_NOTES': np.float64(76.99)}.",
+      "impact": "Downstream models cannot rely on these features without heavy imputation (e.g., TEMP 38% missing).",
+      "remediation": "Exclude highly sparse attributes from graph node/edge features or apply targeted imputation.",
+      "metadata": {
+        "sparse_columns_pct": {
+          "QC_NOTES": 76.99
+        }
+      }
+    },
+    {
+      "target_dataset": "SA02601_v6.csv (Visitation)",
+      "category": "Naming Inconsistency",
+      "check_name": "pollinator_type_multi_assignment",
+      "severity": "WARNING",
+      "total_evaluated": 691,
+      "discrepancy_count": 143,
+      "discrepancy_pct": 20.6946,
+      "description": "Found 143 pollinator taxa assigned to multiple different functional guilds (VISSP_TYPE). Sample: {'ACRISPX1': ['herbivorous grasshopper', 'grasshopper'], 'ADELTRIS': ['herbivorous butterfly; diurnal', 'diurnal moth'], 'AMMOSPX1': ['predaceous wasp', 'halictine bee'], 'ANASRUFA': ['herbivorous beetle', 'beetle'], 'ANTHRSP1': ['predaceous bee-fly', 'herbivore-parasitic bee-fly'], 'APHISPX1': ['herbivorous true-bug', 'true bug'], 'ASEMPOLY': ['decomposer hover-fly', 'hover-fly'], 'ASILSPX1': ['pollinator-predaceous fly', 'predaceous onm bees']}",
+      "impact": "Splits functional insect guilds into inconsistent categories (e.g., Bombus bifarius as social vs solitary).",
+      "remediation": "Construct a canonical 1-to-1 species->guild lookup table to harmonize visitor types.",
+      "metadata": {
+        "inconsistent_species_count": 143,
+        "sample_conflicts": {
+          "ACRISPX1": [
+            "herbivorous grasshopper",
+            "grasshopper"
+          ],
+          "ADELTRIS": [
+            "herbivorous butterfly; diurnal",
+            "diurnal moth"
+          ],
+          "AMMOSPX1": [
+            "predaceous wasp",
+            "halictine bee"
+          ],
+          "ANASRUFA": [
+            "herbivorous beetle",
+            "beetle"
+          ],
+          "ANTHRSP1": [
+            "predaceous bee-fly",
+            "herbivore-parasitic bee-fly"
+          ],
+          "APHISPX1": [
+            "herbivorous true-bug",
+            "true bug"
+          ],
+          "ASEMPOLY": [
+            "decomposer hover-fly",
+            "hover-fly"
+          ],
+          "ASILSPX1": [
+            "pollinator-predaceous fly",
+            "predaceous onm bees"
+          ]
+        }
+      }
+    },
+    {
+      "target_dataset": "SA02601_v6.csv (Visitation)",
+      "category": "Naming Inconsistency",
+      "check_name": "functional_guild_synonyms_and_typos",
+      "severity": "WARNING",
+      "total_evaluated": 78,
+      "discrepancy_count": 13,
+      "discrepancy_pct": 16.6667,
+      "description": "Categorical naming variations detected in VISSP_TYPE: Typos: {'herbivorous muscoid fly': 1026, 'predaceous muscoid fly': 1073, 'herbivore-parasitic muscoid fl': 255, 'muscoid fly': 80, 'beeetle': 5, 'kloeptoparasitic bee': 2, 'decomposer muscoid fly': 5, 'predaceous onm bees': 1}. Synonym/Punctuation splits: [\"'true-bug' vs 'true bug'\", \"'social-wasp' vs 'social wasp'\", \"'hover-fly' vs 'Hover-fly'\", \"'beetle' vs 'herbivorous beetle'\", \"'grasshopper' vs 'herbivorous grasshopper'\"].",
+      "impact": "Categorical encodings create redundant, fragmented one-hot dimensions for the same biological guild.",
+      "remediation": "Standardize string representation (e.g. replace hyphens, fix 'beeetle' -> 'beetle').",
+      "metadata": {
+        "typos": {
+          "herbivorous muscoid fly": 1026,
+          "predaceous muscoid fly": 1073,
+          "herbivore-parasitic muscoid fl": 255,
+          "muscoid fly": 80,
+          "beeetle": 5,
+          "kloeptoparasitic bee": 2,
+          "decomposer muscoid fly": 5,
+          "predaceous onm bees": 1
+        },
+        "synonym_pairs": [
+          "'true-bug' vs 'true bug'",
+          "'social-wasp' vs 'social wasp'",
+          "'hover-fly' vs 'Hover-fly'",
+          "'beetle' vs 'herbivorous beetle'",
+          "'grasshopper' vs 'herbivorous grasshopper'"
+        ]
+      }
+    },
+    {
+      "target_dataset": "Both (SA02601 vs SA02602)",
+      "category": "Naming Inconsistency",
+      "check_name": "observer_naming_style_fragmentation",
+      "severity": "WARNING",
+      "total_evaluated": 107,
+      "discrepancy_count": 32,
+      "discrepancy_pct": 29.9065,
+      "description": "Observer column contains mixed naming styles: 44 uppercase initials (e.g. 'AS', 'ARM'), 20 single first names (e.g. 'Andy', 'Vera'), 24 concatenated observer teams (e.g. 'Andy and Tim', 'Melinda, Logan'), and 8 field log annotations (e.g. 'ARMchange watch', 'xARMx').",
+      "impact": "Observer bias cannot be controlled as a fixed effect in statistical models without disambiguating names.",
+      "remediation": "Create a standardized observer identity dictionary mapping names, teams, and initials to unique IDs.",
+      "metadata": {
+        "multi_person_teams": [
+          "Andy/Brian",
+          "RD/RM",
+          "Andy + Tim",
+          "Alina and Tiffa",
+          "Andy, Tim, Alin",
+          "1-5 Tim, 6-10 V",
+          "Tim + Andy",
+          "Sam (3, 5), Ali"
+        ],
+        "field_note_annotations": [
+          "xARMx",
+          "Unknown",
+          "Sam (3, 5), Ali",
+          "ARMchange watch",
+          "Moldenke (3, 5,",
+          "xARM",
+          "xARMX",
+          "ARMxwatch"
+        ],
+        "sample_initials": [
+          "ANG",
+          "KS",
+          "LKB",
+          "TNB",
+          "JBG",
+          "LSM",
+          "NP",
+          "IP"
+        ],
+        "sample_first_names": [
+          "Tiff",
+          "Alina",
+          "Fabian",
+          "Andy",
+          "Brian",
+          "Unknown",
+          "Noelle",
+          "Scott"
+        ]
+      }
+    },
+    {
+      "target_dataset": "Both (SA02601 vs SA02602)",
+      "category": "Naming Inconsistency",
+      "check_name": "taxonomic_synonym_botanical_drift",
+      "severity": "WARNING",
+      "total_evaluated": 202,
+      "discrepancy_count": 1,
+      "discrepancy_pct": 0.495,
+      "description": "Plant species codes with shifting scientific names across survey years: {'ZIGAVENE': ['Zigadenus venenosus', 'Toxicoscordion venenosum']}. Example: ZIGAVENE shifts between 'Zigadenus venenosus' and 'Toxicoscordion venenosum'.",
+      "impact": "Label inconsistency if grouping by scientific binomial name instead of PLTSP_CODE.",
+      "remediation": "Always use canonical PLTSP_CODE for relational joins; maintain a taxonomy synonym crosswalk.",
+      "metadata": {
+        "synonym_drift": {
+          "ZIGAVENE": [
+            "Zigadenus venenosus",
+            "Toxicoscordion venenosum"
+          ]
+        }
       }
     }
   ]

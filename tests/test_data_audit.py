@@ -11,6 +11,8 @@ from data_audit.audit import DatasetAuditor, run_full_audit
 from data_audit.detectors import (
     DistributionalDetector,
     GranularityDetector,
+    MissingnessEncodingDetector,
+    NamingInconsistencyDetector,
     ReferentialIntegrityDetector,
     SchemaAndDateDetector,
     SemanticStatusDetector,
@@ -29,12 +31,21 @@ def test_datasets(tmp_path: Path):
 def test_schema_and_date_detector(test_datasets):
     vis_path, flw_path = test_datasets
     vis = pd.read_csv(vis_path)
+    flw = pd.read_csv(flw_path)
 
     # Injected a 2099 date with YEAR=2011
-    res, _ = SchemaAndDateDetector.audit_date_format(vis, "vis", "SAMPLEDATE", "%d-%m-%Y")
+    res, _ = SchemaAndDateDetector.audit_date_format(vis, "vis")
     assert res.severity == "ERROR"
     assert res.discrepancy_count >= 1
     assert res.offending_data is not None
+
+    # Multi-date session split check
+    split_res = SchemaAndDateDetector.audit_session_multi_date_splits(vis, "vis")
+    assert split_res.category == "Date Formatting & Consistency"
+
+    # Cross-dataset watch date alignment check
+    align_res = ReferentialIntegrityDetector.audit_cross_dataset_watch_date_alignment(vis, flw)
+    assert align_res.category == "Date Formatting & Consistency"
 
 
 def test_semantic_status_detector(test_datasets):
@@ -76,7 +87,7 @@ def test_distributional_detector(test_datasets):
 def test_temporal_continuity_detector(test_datasets):
     vis_path, flw_path = test_datasets
     vis = pd.read_csv(vis_path)
-    _, parsed_dates = SchemaAndDateDetector.audit_date_format(vis, "vis", "SAMPLEDATE", "%d-%m-%Y")
+    _, parsed_dates = SchemaAndDateDetector.audit_date_format(vis, "vis")
 
     res = TemporalContinuityDetector.audit_calendar_gaps(parsed_dates)
     assert res.severity == "WARNING"
@@ -93,3 +104,16 @@ def test_run_full_audit_produces_artifacts(test_datasets, tmp_path: Path):
     assert output["markdown_report"].exists()
     assert len(output["offending_csvs"]) > 0
     assert (out_dir / "offending_records").exists()
+
+
+def test_missingness_and_naming_detectors(test_datasets):
+    vis_path, flw_path = test_datasets
+    vis = pd.read_csv(vis_path)
+    flw = pd.read_csv(flw_path)
+
+    missing_res = MissingnessEncodingDetector.audit_literal_na_strings(vis, "vis")
+    assert isinstance(missing_res, list)
+
+    obs_res = NamingInconsistencyDetector.audit_observer_naming_styles(vis, flw)
+    assert obs_res.category == "Naming Inconsistency"
+    assert obs_res.check_name == "observer_naming_style_fragmentation"

@@ -15,6 +15,8 @@ from .detectors import (
     DiscrepancyResult,
     DistributionalDetector,
     GranularityDetector,
+    MissingnessEncodingDetector,
+    NamingInconsistencyDetector,
     ReferentialIntegrityDetector,
     SchemaAndDateDetector,
     SemanticStatusDetector,
@@ -32,14 +34,10 @@ class DatasetAuditor:
         self,
         vis_df: pd.DataFrame,
         flw_df: pd.DataFrame,
-        vis_date_fmt: str = "%d-%m-%Y",
-        flw_date_fmt: str = "%Y-%m-%d",
         lam_ceiling_to_test: float = 80.0,
     ):
         self.vis = vis_df.copy()
         self.flw = flw_df.copy()
-        self.vis_date_fmt = vis_date_fmt
-        self.flw_date_fmt = flw_date_fmt
         self.lam_ceiling_to_test = lam_ceiling_to_test
 
     def run_all_checks(self) -> List[DiscrepancyResult]:
@@ -60,16 +58,28 @@ class DatasetAuditor:
             )
         )
 
-        # 2. Date Formatting & Year Invariants
+        # 2. Date Formatting & Year Invariants (Empirical - no false paper format assumptions)
         vis_date_res, vis_dates = SchemaAndDateDetector.audit_date_format(
-            self.vis, "SA02601_visitation", "SAMPLEDATE", self.vis_date_fmt
+            self.vis, "SA02601_visitation"
         )
         results.append(vis_date_res)
 
         flw_date_res, flw_dates = SchemaAndDateDetector.audit_date_format(
-            self.flw, "SA02602_flowering", "SAMPLEDATE", self.flw_date_fmt
+            self.flw, "SA02602_flowering"
         )
         results.append(flw_date_res)
+
+        # Multi-date session splits within datasets
+        results.append(
+            SchemaAndDateDetector.audit_session_multi_date_splits(
+                self.vis, "SA02601_visitation"
+            )
+        )
+        results.append(
+            SchemaAndDateDetector.audit_session_multi_date_splits(
+                self.flw, "SA02602_flowering"
+            )
+        )
 
         # 3. Semantic & Status Invariants
         results.extend(SemanticStatusDetector.audit_ppi_status_invariants(self.vis))
@@ -81,6 +91,7 @@ class DatasetAuditor:
         results.append(watch_cov)
         results.append(event_cov)
         results.append(ReferentialIntegrityDetector.audit_spatial_hierarchy_consistency(self.vis, self.flw))
+        results.append(ReferentialIntegrityDetector.audit_cross_dataset_watch_date_alignment(self.vis, self.flw))
 
         # 5. Granularity & Deduplication
         results.append(GranularityDetector.audit_minute_level_duplicates(self.vis))
@@ -97,6 +108,15 @@ class DatasetAuditor:
         # 7. Temporal Continuity & Sampling Gaps
         results.append(TemporalContinuityDetector.audit_calendar_gaps(vis_dates))
 
+        # 8. Missingness Representation & Field Sparsity (String 'NA' vs blanks)
+        results.extend(MissingnessEncodingDetector.audit_literal_na_strings(self.vis, "SA02601_visitation"))
+        results.extend(MissingnessEncodingDetector.audit_literal_na_strings(self.flw, "SA02602_flowering"))
+
+        # 9. Naming Inconsistencies & Categorical Synonyms
+        results.extend(NamingInconsistencyDetector.audit_pollinator_type_synonyms_and_typos(self.vis))
+        results.append(NamingInconsistencyDetector.audit_observer_naming_styles(self.vis, self.flw))
+        results.append(NamingInconsistencyDetector.audit_taxonomic_synonym_drift(self.vis, self.flw))
+
         return results
 
 
@@ -104,8 +124,6 @@ def run_full_audit(
     vis_path: Path | str,
     flw_path: Path | str,
     out_dir: Path | str,
-    vis_date_fmt: str = "%d-%m-%Y",
-    flw_date_fmt: str = "%Y-%m-%d",
     lam_ceiling_to_test: float = 80.0,
 ) -> Dict[str, Any]:
     """Loads raw datasets, executes all discrepancy detectors, and exports full report artifacts."""
@@ -118,7 +136,7 @@ def run_full_audit(
     flw = pd.read_csv(flw_path, low_memory=False)
 
     auditor = DatasetAuditor(
-        vis, flw, vis_date_fmt=vis_date_fmt, flw_date_fmt=flw_date_fmt, lam_ceiling_to_test=lam_ceiling_to_test
+        vis, flw, lam_ceiling_to_test=lam_ceiling_to_test
     )
     findings = auditor.run_all_checks()
 

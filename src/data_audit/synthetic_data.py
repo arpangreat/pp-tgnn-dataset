@@ -53,8 +53,8 @@ def generate_audit_test_datasets(
             base_date = pd.Timestamp(year=year, month=6, day=1)
             for watch in range(1, watches_per_year + 1):
                 date = base_date + pd.Timedelta(days=7 * watch)
-                date_vis = date.strftime("%d-%m-%Y")  # SA02601 canonical format
-                date_flw = date.strftime("%Y-%m-%d")  # SA02602 canonical format
+                date_vis = date.strftime("%Y-%m-%d")
+                date_flw = date.strftime("%Y-%m-%d")
 
                 # Flowering records
                 for plant in plants:
@@ -94,28 +94,28 @@ def generate_audit_test_datasets(
         # 1. Date year mismatch in vis
         vis_rows.append({
             "DBCODE": "SA026", "ENTITY": 1, "COMPLEX": "COMPLEX_A", "MEADOW": "MEADOW_0",
-            "PLOT_ID": "PLOT_0", "YEAR": 2011, "SAMPLEDATE": "15-06-2099",  # Contradicts YEAR=2011
+            "PLOT_ID": "PLOT_0", "YEAR": 2011, "SAMPLEDATE": "2099-06-15",  # Contradicts YEAR=2011
             "WATCH": 1, "OBSERVER": "OBS1", "MINUTE": 1, "PPI_STATUS": 1,
             "PLTSP_CODE": "PL_0", "VISSP_CODE": "PO_0", "NO_INT": 2,
         })
         # 2. Invalid PPI_STATUS
         vis_rows.append({
             "DBCODE": "SA026", "ENTITY": 1, "COMPLEX": "COMPLEX_A", "MEADOW": "MEADOW_0",
-            "PLOT_ID": "PLOT_0", "YEAR": 2011, "SAMPLEDATE": "15-06-2011",
+            "PLOT_ID": "PLOT_0", "YEAR": 2011, "SAMPLEDATE": "2011-06-15",
             "WATCH": 1, "OBSERVER": "OBS1", "MINUTE": 2, "PPI_STATUS": 99,  # invalid code
             "PLTSP_CODE": "PL_0", "VISSP_CODE": "PO_0", "NO_INT": 1,
         })
         # 3. Positive interaction missing species
         vis_rows.append({
             "DBCODE": "SA026", "ENTITY": 1, "COMPLEX": "COMPLEX_A", "MEADOW": "MEADOW_0",
-            "PLOT_ID": "PLOT_0", "YEAR": 2011, "SAMPLEDATE": "15-06-2011",
+            "PLOT_ID": "PLOT_0", "YEAR": 2011, "SAMPLEDATE": "2011-06-15",
             "WATCH": 1, "OBSERVER": "OBS1", "MINUTE": 3, "PPI_STATUS": 1,
             "PLTSP_CODE": np.nan, "VISSP_CODE": "PO_0", "NO_INT": 1,
         })
         # 4. Unmatched plant species
         vis_rows.append({
             "DBCODE": "SA026", "ENTITY": 1, "COMPLEX": "COMPLEX_A", "MEADOW": "MEADOW_0",
-            "PLOT_ID": "PLOT_0", "YEAR": 2011, "SAMPLEDATE": "15-06-2011",
+            "PLOT_ID": "PLOT_0", "YEAR": 2011, "SAMPLEDATE": "2011-06-15",
             "WATCH": 1, "OBSERVER": "OBS1", "MINUTE": 4, "PPI_STATUS": 1,
             "PLTSP_CODE": "PL_ALIEN", "VISSP_CODE": "PO_0", "NO_INT": 3,  # Missing in flw
         })

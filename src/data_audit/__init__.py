@@ -10,6 +10,8 @@ from .audit import DatasetAuditor, run_full_audit
 from .detectors import (
     DistributionalDetector,
     GranularityDetector,
+    MissingnessEncodingDetector,
+    NamingInconsistencyDetector,
     ReferentialIntegrityDetector,
     SchemaAndDateDetector,
     SemanticStatusDetector,
@@ -26,5 +28,7 @@ __all__ = [
     "GranularityDetector",
     "DistributionalDetector",
     "TemporalContinuityDetector",
+    "MissingnessEncodingDetector",
+    "NamingInconsistencyDetector",
     "AuditReporter",
 ]

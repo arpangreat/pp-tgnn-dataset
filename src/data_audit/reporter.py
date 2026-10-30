@@ -41,7 +41,7 @@ class AuditReporter:
 
         for r in results:
             prefix = f"[{r.severity}]"
-            msg = f"{prefix:<9} {r.check_name:<42} | Issues: {r.discrepancy_count:>5} ({r.discrepancy_pct:>6.2f}%)"
+            msg = f"{prefix:<9} {r.target_dataset:<32} | {r.check_name:<40} | Issues: {r.discrepancy_count:>5} ({r.discrepancy_pct:>6.2f}%)"
             if r.severity == "ERROR":
                 log.error(msg)
                 log.error("   └─ %s", r.description)
@@ -106,8 +106,8 @@ class AuditReporter:
             "",
             "## 2. Findings by Severity",
             "",
-            "| Severity | Check Name | Category | Issues Count | Issues % | Impact |",
-            "|---|---|---|---|---|---|",
+            "| Severity | Target Dataset | Check Name | Category | Issues Count | Issues % | Impact |",
+            "|---|---|---|---|---|---|---|",
         ]
 
         # Sort order: ERROR first, then WARNING, then INFO
@@ -117,7 +117,7 @@ class AuditReporter:
         for r in sorted_results:
             badge = f"**{r.severity}**" if r.severity in ("ERROR", "WARNING") else r.severity
             lines.append(
-                f"| {badge} | `{r.check_name}` | {r.category} | {r.discrepancy_count:,} | {r.discrepancy_pct:.2f}% | {r.impact} |"
+                f"| {badge} | `{r.target_dataset}` | `{r.check_name}` | {r.category} | {r.discrepancy_count:,} | {r.discrepancy_pct:.2f}% | {r.impact} |"
             )
 
         lines.extend([
@@ -131,6 +131,7 @@ class AuditReporter:
         for r in sorted_results:
             lines.extend([
                 f"### `{r.check_name}` ({r.severity})",
+                f"- **Target Dataset:** {r.target_dataset}",
                 f"- **Category:** {r.category}",
                 f"- **Total Rows / Entities Evaluated:** {r.total_evaluated:,}",
                 f"- **Discrepancies Identified:** {r.discrepancy_count:,} ({r.discrepancy_pct:.2f}%)",
