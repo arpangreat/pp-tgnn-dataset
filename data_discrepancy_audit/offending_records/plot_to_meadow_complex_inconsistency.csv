@@ -1,0 +1,11 @@
+PLOT_ID,MEADOW,COMPLEX
+CPS09,CPS,Carpenter
+FM207,M2,Frissell
+LOB01,LB,Lookout
+LOM01,LM,Lookout
+LOM04,LM,Lookout
+CPS09,CPM,Carpenter
+FM207,M2,Lookout
+LOB01,LB,Carpenter
+LOM01,LM,Carpenter
+LOM04,LM,Carpenter

@@ -37,3 +37,6 @@ figures/*.png
 .pytest_cache/
 .coverage
 htmlcov/
+
+# UV artifacts
+uv.lock

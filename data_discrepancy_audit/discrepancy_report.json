@@ -1,0 +1,330 @@
+{
+  "summary": {
+    "total_checks": 18,
+    "errors": 3,
+    "warnings": 7,
+    "info": 8
+  },
+  "findings": [
+    {
+      "category": "Schema Integrity",
+      "check_name": "SA02601_visitation_missing_columns",
+      "severity": "INFO",
+      "total_evaluated": 14,
+      "discrepancy_count": 0,
+      "discrepancy_pct": 0.0,
+      "description": "Evaluated expected canonical columns in SA02601_visitation. Missing: []",
+      "impact": "Downstream pipeline failure if required survey attributes are absent.",
+      "remediation": "Ensure source CSV contains required columns or remap via PipelineConfig. Missing: []",
+      "metadata": {
+        "missing_columns": [],
+        "extra_columns": [
+          "START_TIME",
+          "END_TIME",
+          "MINUTE",
+          "CLOUDS",
+          "WIND",
+          "TEMP",
+          "PLTSP_NAME",
+          "VISSP_NAME",
+          "VISSP_TYPE",
+          "REF_NO",
+          "VISSP_NO",
+          "QC_NOTES"
+        ]
+      }
+    },
+    {
+      "category": "Schema Integrity",
+      "check_name": "SA02602_flowering_missing_columns",
+      "severity": "INFO",
+      "total_evaluated": 13,
+      "discrepancy_count": 0,
+      "discrepancy_pct": 0.0,
+      "description": "Evaluated expected canonical columns in SA02602_flowering. Missing: []",
+      "impact": "Downstream pipeline failure if required survey attributes are absent.",
+      "remediation": "Ensure source CSV contains required columns or remap via PipelineConfig. Missing: []",
+      "metadata": {
+        "missing_columns": [],
+        "extra_columns": [
+          "PLTSP_NAME",
+          "NO_STALK",
+          "QC_NOTES"
+        ]
+      }
+    },
+    {
+      "category": "Date Formatting & Consistency",
+      "check_name": "SA02601_visitation_date_year_consistency",
+      "severity": "ERROR",
+      "total_evaluated": 74942,
+      "discrepancy_count": 74942,
+      "discrepancy_pct": 100.0,
+      "description": "Format mismatch in SA02601_visitation: Expected format '%d-%m-%Y' failed on 74942 rows. Auto-detection identified actual raw format as '%Y-%m-%d' (100% match with 'YEAR').",
+      "impact": "Pipeline execution with default config '%d-%m-%Y' will immediately crash. Must set PipelineConfig.vis_date_fmt = '%Y-%m-%d'.",
+      "remediation": "Update PipelineConfig(vis_date_fmt='%Y-%m-%d') when running pipeline on this dataset version.",
+      "metadata": {
+        "expected_format": "%d-%m-%Y",
+        "detected_actual_format": "%Y-%m-%d",
+        "parse_failures": 74942,
+        "year_mismatches": 0
+      }
+    },
+    {
+      "category": "Date Formatting & Consistency",
+      "check_name": "SA02602_flowering_date_year_consistency",
+      "severity": "INFO",
+      "total_evaluated": 23642,
+      "discrepancy_count": 0,
+      "discrepancy_pct": 0.0,
+      "description": "Evaluated SA02602_flowering 'SAMPLEDATE' with format '%Y-%m-%d'. Failed parsing: 0. Contradicted 'YEAR': 0.",
+      "impact": "Silent date corruption; links events to incorrect field seasons or chronologies.",
+      "remediation": "Verify expected date format string ('%Y-%m-%d'). Remember SA02601 and SA02602 may have varying formats across EDI release versions.",
+      "metadata": {
+        "expected_format": "%Y-%m-%d",
+        "detected_actual_format": null,
+        "parse_failures": 0,
+        "year_mismatches": 0
+      }
+    },
+    {
+      "category": "Semantic Integrity",
+      "check_name": "vis_ppi_status_valid_domain",
+      "severity": "INFO",
+      "total_evaluated": 74942,
+      "discrepancy_count": 0,
+      "discrepancy_pct": 0.0,
+      "description": "Checked if PPI_STATUS is strictly binary {0, 1}.",
+      "impact": "Unknown record type; invalid status breaks E+ / E0 partitioning.",
+      "remediation": "Sanitize raw codes to {0: absence, 1: confirmed interaction}.",
+      "metadata": {}
+    },
+    {
+      "category": "Semantic Integrity",
+      "check_name": "vis_pos_interaction_missing_species",
+      "severity": "INFO",
+      "total_evaluated": 61025,
+      "discrepancy_count": 0,
+      "discrepancy_pct": 0.0,
+      "description": "Verified that PPI_STATUS=1 records contain non-null plant and pollinator species.",
+      "impact": "Interactions cannot be mapped to bipartite graph nodes without species identifiers.",
+      "remediation": "Impute or drop unidentifiable visitor/plant interaction rows.",
+      "metadata": {}
+    },
+    {
+      "category": "Semantic Integrity",
+      "check_name": "vis_neg_interaction_has_species",
+      "severity": "INFO",
+      "total_evaluated": 13917,
+      "discrepancy_count": 0,
+      "discrepancy_pct": 0.0,
+      "description": "Verified that structural negatives (PPI_STATUS=0) have null species codes.",
+      "impact": "Contradiction: record flagged as empty watch but lists a species.",
+      "remediation": "Review if record is an interaction with wrong status flag or stray plant entry.",
+      "metadata": {}
+    },
+    {
+      "category": "Semantic Integrity",
+      "check_name": "vis_pos_missing_or_zero_visit_count",
+      "severity": "WARNING",
+      "total_evaluated": 61025,
+      "discrepancy_count": 69,
+      "discrepancy_pct": 0.1131,
+      "description": "Audited NO_INT in positive interactions for missing or non-positive counts.",
+      "impact": "Algorithm 2 substitutes missing counts with 1. Causes slight variation in raw totals.",
+      "remediation": "Apply fillna(1) as prescribed by Algorithm 2 in paper.",
+      "metadata": {}
+    },
+    {
+      "category": "Semantic Integrity",
+      "check_name": "flw_negative_or_null_flower_count",
+      "severity": "WARNING",
+      "total_evaluated": 23642,
+      "discrepancy_count": 2154,
+      "discrepancy_pct": 9.1109,
+      "description": "Audited NO_FLWS in flowering records. Negative: 0, Null: 2154.",
+      "impact": "Negative counts are physical impossibilities; nulls require fillna(0) for log1p.",
+      "remediation": "Impute null flower counts to 0; investigate origin of any negative values.",
+      "metadata": {
+        "negative_counts": 0,
+        "null_counts": 2154
+      }
+    },
+    {
+      "category": "Referential Integrity",
+      "check_name": "unmatched_visited_plant_species",
+      "severity": "INFO",
+      "total_evaluated": 147,
+      "discrepancy_count": 0,
+      "discrepancy_pct": 0.0,
+      "description": "Visited plant species missing from flowering survey catalog: []",
+      "impact": "Interactions on these plants cannot compute phenological confidence and rely purely on default fallback (0.5).",
+      "remediation": "Harmonize species taxonomic codes across both datasets (check synonyms or typo suffixes).",
+      "metadata": {
+        "unmatched_species": []
+      }
+    },
+    {
+      "category": "Referential Integrity",
+      "check_name": "visitation_watches_missing_flowering_survey",
+      "severity": "WARNING",
+      "total_evaluated": 4579,
+      "discrepancy_count": 4,
+      "discrepancy_pct": 0.0874,
+      "description": "Watch sessions surveyed for pollinator visits that have NO corresponding record in flowering survey.",
+      "impact": "Indicates asynchronous sampling sessions or unsynchronized data entry.",
+      "remediation": "Fall back to prior flowering observation (LOCF) for that plot-season.",
+      "metadata": {}
+    },
+    {
+      "category": "Referential Integrity",
+      "check_name": "interactions_lacking_same_session_flowering",
+      "severity": "WARNING",
+      "total_evaluated": 61025,
+      "discrepancy_count": 107,
+      "discrepancy_pct": 0.1753,
+      "description": "Plant interaction records lacking same-session flowering record: 107 (0.175%). Paper observed ~0.24% requiring LOCF fallback.",
+      "impact": "Requires last-observation-carried-forward (LOCF) imputation (Algorithm 6).",
+      "remediation": "Confirm Algorithm 6 join_with_fallback resolves these without unintended defaults.",
+      "metadata": {}
+    },
+    {
+      "category": "Spatial Hierarchy",
+      "check_name": "plot_to_meadow_complex_inconsistency",
+      "severity": "ERROR",
+      "total_evaluated": 180,
+      "discrepancy_count": 5,
+      "discrepancy_pct": 2.7778,
+      "description": "Plots assigned to contradictory meadows or complexes across files: 5.",
+      "impact": "Corrupts spatial partitioning and meadow-stratified detection probability analysis.",
+      "remediation": "Standardize spatial lookup metadata table and enforce foreign keys.",
+      "metadata": {}
+    },
+    {
+      "category": "Granularity & Aggregation",
+      "check_name": "within_watch_minute_level_duplicates",
+      "severity": "INFO",
+      "total_evaluated": 20018,
+      "discrepancy_count": 7591,
+      "discrepancy_pct": 37.9209,
+      "description": "Found 7591 plant-pollinator pairs with multiple minute-level visits in the same watch (41007 extra rows collapsed into 20018 watch-level events).",
+      "impact": "Explains the reduction from 61,025 raw positive rows to ~20,025 watch-level positive events.",
+      "remediation": "Ensure GroupSum(..., value=NO_INT) is performed as prescribed in Algorithm 7.",
+      "metadata": {
+        "collapsed_extra_rows": 41007,
+        "watch_level_events": 20018
+      }
+    },
+    {
+      "category": "Granularity & Aggregation",
+      "check_name": "structural_negative_granularity_discrepancy",
+      "severity": "WARNING",
+      "total_evaluated": 13917,
+      "discrepancy_count": 12528,
+      "discrepancy_pct": 90.0194,
+      "description": "Negative events exist at two different granularities: 13917 raw minute-level rows vs 1389 deduplicated watch sessions. (Paper Table 1 cited 1,389; Section 2.2 cited 13,917).",
+      "impact": "Users expecting 1,389 negative rows will encounter schema confusion when seeing 13,917 rows.",
+      "remediation": "Export both granularities explicitly or document that 1,389 is deduplicated by (PLOT_ID, YEAR, WATCH).",
+      "metadata": {
+        "raw_minute_rows": 13917,
+        "deduplicated_watch_sessions": 1389
+      }
+    },
+    {
+      "category": "Distributional Boundary",
+      "check_name": "lambda_grid_capping_risk",
+      "severity": "ERROR",
+      "total_evaluated": 17472,
+      "discrepancy_count": 4399,
+      "discrepancy_pct": 25.1774,
+      "description": "Evaluated lambda-grid ceiling of 80.0. Maximum single-watch count observed = 1770. Groups at risk of boundary pinning: 4399 (25.18%).",
+      "impact": "Silently pins posterior mean lambda_hat at grid ceiling, artificially squashing strongest edges.",
+      "remediation": "Widen PipelineConfig.lam_grid upper ceiling to at least 5000 (currently evaluated: 80.0).",
+      "metadata": {
+        "max_single_watch_count": 1770,
+        "evaluated_ceiling": 80.0
+      }
+    },
+    {
+      "category": "Distributional Boundary",
+      "check_name": "degenerate_flowering_species",
+      "severity": "WARNING",
+      "total_evaluated": 202,
+      "discrepancy_count": 38,
+      "discrepancy_pct": 18.8119,
+      "description": "Species with zero variance in flower counts: 38 (18.81%).",
+      "impact": "Min-max normalization yields 0/0; triggers neutral 0.5 confidence fallback in Algorithm 5.",
+      "remediation": "Confirm Algorithm 5 handles degenerate species via the 0.5 fallback condition.",
+      "metadata": {
+        "degenerate_species": [
+          "ANEMDELT",
+          "ANEMSPXX",
+          "ANTHSCAN",
+          "ARABHOLB",
+          "CEANVELU",
+          "CHRYLEUC",
+          "CLAYPERF",
+          "CLAYSPXX",
+          "CONVNYCT",
+          "ERYTGRAN",
+          "GALIBIFO",
+          "GALITRIF",
+          "LILICOLU",
+          "LINASEPT",
+          "LITHBULB",
+          "LOTUPURS",
+          "LOTUSUBP",
+          "MAIARACE",
+          "MITEPENT",
+          "MYCEMURA",
+          "NEMOPARV",
+          "OSMOBERT",
+          "PENSRUPI",
+          "PERINEVA",
+          "RANUCALI",
+          "SAGISAGI",
+          "SANIGRAV",
+          "SCIRSPXX",
+          "SEDUSTEN",
+          "SMILSTEL",
+          "SORBSITC",
+          "TOLMMENZ",
+          "TOXIVENE",
+          "TRILOVAT",
+          "VACCALAS",
+          "VALESCOU",
+          "VIOLPALU",
+          "VIOLSPXX"
+        ]
+      }
+    },
+    {
+      "category": "Temporal Continuity",
+      "check_name": "calendar_year_gaps",
+      "severity": "WARNING",
+      "total_evaluated": 11,
+      "discrepancy_count": 2,
+      "discrepancy_pct": 18.1818,
+      "description": "Multi-year hiatus detected over survey horizon [2011-2021]. Unsampled years: [2019, 2020].",
+      "impact": "Naive calendar-based train/val/test splits produce empty partitions or invalid temporal decay.",
+      "remediation": "Use cumulative event volume splitting (Algorithm 8) over continuous elapsed time tau.",
+      "metadata": {
+        "missing_years": [
+          2019,
+          2020
+        ],
+        "observed_years": [
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2021
+        ]
+      }
+    }
+  ]
+}
