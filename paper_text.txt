@@ -1,0 +1,668 @@
+A Detection-Bias-Corrected Temporal Event-Stream Dataset for Dynamic
+Plant–Pollinator Link Prediction
+
+Abstract
+We present a reprocessed, machine-learning-ready version of a public H.J. Andrews LTER plant–pollinator visitation
+dataset (2011–2018, 2021; 180 plots, 18 meadows, 147 plant species, 800 pollinator taxa), purpose-built for dynamic link
+prediction with Temporal Graph Neural Networks. Starting from two raw survey files (74,942 visitation rows; 23,642
+flowering-phenology rows), we separate genuine interactions from structural non-detections. We then correct for imperfect
+pollinator detection using a Royle-type Poisson N -mixture model, fitted through vectorized numerical marginal-likelihood
+maximization. Next, we compute a phenology-based confidence weight for each interaction. Finally, we assemble the
+data into a continuous-time weighted event stream and apply a leakage-safe chronological split. The resulting dataset
+comprises 20,107 weighted interaction events and 1,389 empirically grounded negative (surveyed, non-detected) events.
+We document every processing decision, including two pitfalls specific to these data: a silent date-format mismatch
+between the source files and a real multi-year survey gap that can lead to incorrect results with naive calendar-based
+splitting. These details are provided to ensure that the dataset can be reused reliably.
+Keywords: Temporal graph learning, dynamic link prediction, plant–pollinator networks, N-mixture model, detection
+bias, ecological network data
+Specifications Table
+Table 1 lists the details of the raw input datasets.
+Value of the Data
+• This is, to our knowledge, the first release of the
+H.J. Andrews plant–pollinator interaction data as a
+continuous-time weighted event stream suitable for
+direct use with TGNN / dynamic link prediction
+frameworks (e.g., TGN, TGAT, and related architectures), rather than as a static interaction matrix.
+• The dataset separates true interaction strength from
+detection artifacts via an explicit statistical model,
+rather than treating raw visit counts as ground truth;
+this is directly useful to ecologists studying network
+robustness, competition, and niche overlap, as well
+as to ML researchers benchmarking noise-robust temporal graph methods.
+
+• The dataset includes empirically observed negative
+examples (surveyed sessions with no detected interaction), which are more informative than the randomly corrupted negatives typically used to evaluate link prediction, thereby improving the realism of
+benchmark evaluations.
+• The chronological train/validation/test split, along
+with the documented multi-year survey gap it accounts for, protects downstream users from a subtle
+and easy-to-miss data-leakage issue.
+• The processing pipeline is fully scripted and reusable;
+it can be re-executed on future releases of the same
+LTER survey or adapted to structurally similar plant–
+pollinator, host–parasite, or other bipartite ecological interaction datasets.
+
+Table 1: Specification table
+Subject
+Specific subject
+area
+Type of data
+Data collection
+
+Data source location
+Data accessibility
+
+Computer Science — Machine Learning (Graph Representation Learning); Ecology — Network Ecology
+Temporal graph learning and dynamic link prediction; construction of a detection-bias-corrected, weighted temporal event
+stream from a public plant–pollinator visitation survey, for benchmarking Temporal Graph Neural Networks (TGNNs)
+Tables (CSV); Figure
+Field observations were collected by the H.J. Andrews Experimental Forest LTER program via standardized timed pollinator watches and flowering-phenology surveys at fixed meadow plots (2011–2018, 2021; no surveys in 2019–2020). This
+dataset reprocesses those records: harmonizing source files, separating genuine interactions from structural non-detections,
+correcting detection bias via a hierarchical Poisson N-mixture model, computing phenology-based confidence weights, and
+assembling a chronological event stream with train/val/test splits.
+H.J. Andrews Experimental Forest and adjoining Willamette National Forest meadows, Cascade Range, Oregon, USA (approx. 44.20–44.28◦ N, 122.13–122.15◦ W); 180 plots across 18 meadows in 5 meadow complexes
+Original raw data: Plant Pollinator data at H.J. Andrews Experimental Forest, 2011 to 2021. Full data page: https:
+//andlter.forestry.oregonstate.edu/data/abstract.aspx?dbcode=SA026
+
+Table 2: Files comprising the dataset.
+
+File
+
+Rows × Cols
+
+Description
+
+SA02601_v6.csv (raw input)
+
+74,942 × 26
+
+SA02602_v5.csv (raw input)
+
+23,642 × 16
+
+plant_pollinator_events.csv
+
+20,107 × 12
+
+plant_pollinator_negative_ev
+ents.csv
+
+1,389 × 5
+
+events_train/val/test.csv
+
+16,085 / 2,011
+/ 2,011 rows
+
+Raw visitation events: one row per observed pollinator visit at a given plot, date, watch session, and
+minute; includes species codes, visit count (NO_INT), and
+a PPI_STATUS flag distinguishing real interactions from
+surveyed-but-empty watches.
+Raw flowering phenology: one row per plant species surveyed at a given plot, date, and watch session; includes
+stalk count (NO_STALK) and flower count (NO_FLWS).
+Processed
+weighted
+positive
+event
+stream:
+(τ, plant_id, pollinator_id, c) plus intermediate confidence components and provenance columns.
+Structural negatives: watch sessions in which the
+plot was surveyed but no interaction was observed
+(PPI_STATUS = 0 in the raw data).
+Chronological 80/10/10 split of the positive event stream
+by cumulative elapsed time, for leakage-safe model training and evaluation.
+
+1. Data Description
+
+2.2. Separating interactions from structural negatives
+
+Raw visitation rows carry a PPI_STATUS flag: PPI_STATUS
+The dataset comprises two raw source files (retained
+=
+1
+denotes a row with a recorded plant–pollinator interfor provenance) and five processed files derived from them;
+action
+(61,025 of 74,942 rows); PPI_STATUS = 0 denotes a
+Table 2 summarizes each file and Table 3 documents every
+watch
+session
+in which the plot was surveyed but no intercolumn of the primary processed file.
+action
+was
+observed
+(13,917 rows, with species-code fields
+Dataset-level summary statistics (computed directly from
+empty
+by
+construction).
+We retain the latter as a sepathe processed files): 20,107 weighted positive events span
+rate
+table
+of
+structural
+negatives
+rather than discarding
+3,662 days (≈ 10.0 years) across 4,532 distinct plant–pollinator
+them,
+since
+they
+constitute
+empirically
+observed absences
+pairs, out of 147 × 800 = 117,600 possible pairs — an
+rather
+than
+merely
+missing
+data;
+Algorithm
+2 details this
+observed-pair density of 3.85%. This is consistent with
+separation.
+the 3.5% density reported for an earlier static-network
+use of the same underlying survey data by Fu et al. [2],
+2.3. Detection-bias correction via a Poisson N-mixture model
+serving as an external validation that our reprocessing has
+Raw visit counts underestimate true interaction frepreserved the network’s intrinsic sparsity structure. The
+quency because pollinators are imperfectly detected during
+final edge weight c has a median of 0.096 (IQR 0.046–
+a timed watch. We model this explicitly using a Royle-type
+0.193); its two components, confidence_posterior and
+N -mixture formulation [4]. For a group g = (plot, year, plant, pollin
+confidence_flowering, have medians of 0.34 and 0.32,
+with replicate watches k = 1, . . . , Kg (every WATCH conrespectively (both IQRs spanning roughly 0.16–0.5), inducted at that plot in that year; an unrecorded pair on a
+dicating that neither component dominates the product.
+conducted watch counts as an implicit zero):
+Only 0.24% of events required the flowering-confidence
+fallback described in Section 2.
+2. Experimental Design, Materials and Methods
+2.1. Raw data and known structural properties
+The two source files use different date formats (SA02601:
+DD-MM-YYYY; SA02602: YYYY-MM-DD) — parsing
+both with a single format string silently produces incorrect or null dates for one file. Therefore, each file is parsed
+separately and validated by asserting that the parsed year
+matches the recorded YEAR column, as implemented in Algorithm 1. Furthermore, the source data contain a multiyear sampling gap: no surveys were conducted in 2019 or
+2020 (Figure 1a). Any downstream splitting or temporaldecay modeling that assumes uniform sampling must account for this gap explicitly.
+
+Ng ∼ Poisson(λg )
+
+(1)
+
+Yg,k | Ng ∼ Binomial(Ng , p)
+
+(2)
+
+where Ng is the latent true interaction intensity and Yg,k
+is the detected count on replicate watch k.
+The latent abundance Ng is marginalized out numerically — for a truncated range of candidate N (from max(yg )
+up to max(yg ) + 30), we compute
+
+P (yg | λ, p) =
+
+X
+N
+
+2
+
+Poisson(N ; λ)
+
+Kg
+Y
+k=1
+
+Binomial(yg,k ; N, p),
+(3)
+
+Table 3: Column-level description of plant_pollinator_events.csv, the primary processed output.
+
+Column
+
+Description
+
+tau
+
+Elapsed time since the first record in the dataset, in days (integer, range 0–
+3,662). Used as the continuous temporal axis for TGNN training; not the raw
+WATCH ordinal, which would misrepresent the multi-year gap between 2018 and
+2021.
+Calendar date of the observation (ISO 8601), retained for interpretability and
+for reconstructing calendar-year subsets.
+Canonical species codes (union vocabulary across both raw files; 147 plant and
+800 pollinator identifiers).
+Raw visit count summed within the (plot, year, watch, plant, pollinator) cell
+(i.e., across duplicate within-watch minute-level rows).
+Detection-bias-corrected interaction confidence in [0, 1]: normalized log(1+ λ̂),
+where λ̂ is the posterior mean of the latent interaction intensity from the fitted
+N -mixture model (see Section 2).
+Phenology-based confidence in [0, 1]:
+log-transformed, within-speciesnormalized flower count at the time of observation.
+Final edge weight, c = confidence_posterior × confidence_flowering, used
+as the event weight in the temporal graph.
+Boolean flag; True for the 0.24% of events where no same-session flowering
+record existed and a last-observation-carried-forward value was substituted
+(see Section 2).
+Provenance fields retained from the raw data, enabling traceability back to
+the original survey record and supporting alternative (e.g., per-plot or permeadow) splitting strategies.
+
+date
+plant_id / pollinator_id
+NO_INT
+confidence_posterior
+
+confidence_flowering
+c
+is_imputed_flowering
+
+PLOT_ID / YEAR / WATCH
+
+cate opportunities (watches conducted at that plot-year),
+not watches on which the pair was actually detected — a
+stricter criterion requiring ≥ 2 actual detections is satisfied by only 2,092 groups, but is not what the pooling step
+conditions on.
+As an explicit methodological note: the natural presence probability, P (Ng > 0) = 1 − exp(−λ̂g ), saturates
+almost immediately — its median across all 17,472 groups
+is 0.985 (Figure 1b, orange). Once a single detection is
+observed at p̂ = 0.15, the model is highly confident that
+a true interaction exists. Although statistically sound,
+this causes the presence probability to saturate near 1 for
+nearly every observed pair, rendering it ineffective as a
+graded edge weight. We instead export the posterior mean
+λ̂g and derive
+
+fully vectorized over a grid of λ via NumPy broadcasting (Listing 1) rather than looping over candidate λ values. This vectorization enables fitting all 17,472 groups
+in seconds, avoiding the prohibitive runtime of a naive
+Python-level loop. Before evaluating this likelihood, each
+group must be assembled into its replicate-watch count
+vector yg and replicate count Kg ; Algorithm 3 performs
+this grouping using the full set of watches conducted at
+each plot-year (from vis) so that unobserved pairs on conducted watches are recorded as implicit zeros rather than
+omitted.
+A single pooled detection probability p is identified
+by grid search over informative groups (those with ≥ 2
+replicate watches conducted at that plot in that year, i.e.,
+Kg ≥ 2; 17,342 of the 17,472 total groups qualify, from
+which 250 are sampled for the pooled fit), profiling out
+each group’s own λ; the fitted value on this dataset is
+p̂ = 0.15. Given p̂, a grid-based Bayesian posterior over
+λg (flat prior) is computed for every group, and its posterior mean λ̂g is retained. Note that Kg ≥ 2 counts repli-
+
+
+
+confidence_posterior = minmax log(1 + λ̂g )
+
+(4)
+
+normalized globally (Figure 1b, blue), which preserves
+relative interaction intensity.
+
+Algorithm 1 HarmonizeRawData — load and validate the two source files
+Require: vis_path, f lw_path
+Ensure: validated tables vis, f lw with parsed date columns
+1: vis ← ReadCSV(vis_path)
+2: f lw ← ReadCSV(f lw_path)
+3: vis.date ← ParseDate(vis.SAMPLEDATE, “DD-MM-YYYY”)
+4: f lw.date ← ParseDate(f lw.SAMPLEDATE, “YYYY-MM-DD”)
+5: assert vis.date.year = vis.Y EAR for every row
+6: assert f lw.date.year = f lw.Y EAR for every row
+7: return vis, f lw
+
+3
+
+Algorithm 2 PartitionInteractions — separate E + from E 0
+Require: harmonized visitation table vis
+Ensure: positive interactions E + , structural negatives E 0
+1: assert vis.PPI_STATUS ∈ {0, 1} for every row
+2: E + ← {r ∈ vis : r.PPI_STATUS = 1}
+3: E 0 ← {r ∈ vis : r.PPI_STATUS = 0}
+4: assert E + .PLTSP_CODE is non-null for every row; E 0 .PLTSP_CODE is null for every row
+5: E + .NO_INT ← FillNA(E + .NO_INT, 1)
+▷ treat rare missing counts as a single visit
+6: return E + , E 0
+
+def log_marginal_over_lamgrid(y, lam_grid, p, n_trunc_extra=30):
+y = np.asarray(y)
+n_max = int(y.max()) + n_trunc_extra
+n_range = np.arange(int(y.max()), n_max + 1)
+# (Nc,)
+# log P(y_k | N) summed over replicates k, independent of lambda
+log_lik_k = binom.logpmf(y[:, None], n_range[None, :], p) # (K, Nc)
+log_lik_sum = log_lik_k.sum(axis=0)
+# (Nc,)
+# log Poisson prior over N for every lambda in the grid at once
+log_prior_N = poisson.logpmf(n_range[:, None], lam_grid[None, :])
+
+# (Nc, L)
+
+log_joint = log_lik_sum[:, None] + log_prior_N
+# (Nc, L)
+m = log_joint.max(axis=0, keepdims=True)
+log_ml = (m + np.log(np.sum(np.exp(log_joint - m),
+axis=0, keepdims=True))).ravel()
+return log_ml # (L,)
+Listing 1: Vectorized log marginal likelihood log P (yg | λ, p), evaluated simultaneously for every λ on a grid via NumPy broadcasting.
+
+ble across species with divergent floral morphology. Algorithm 5 implements this transformation, including the
+degenerate case where a species exhibits zero variation in
+flower count across the survey.
+
+2.4. Flowering-based confidence
+Raw flower counts (NO_FLWS) are heavily right-skewed
+(median 2.4, maximum 1,560 across the flowering survey),
+meaning direct min–max normalization collapses most values toward zero. We instead compute
+
+2.5. Joining visitation and flowering records
+confidence_flowering = minmaxwithin-sp.
+
+Visitation and flowering records are joined on (PLOT_ID,
+YEAR, WATCH, PLTSP_CODE). For the small fraction of watchlevel interaction records lacking a concurrent flowering survey (0.24% of the final event stream), we fall back to the
+most recent prior flowering observation for that species
+in that plot-year (last-observation-carried-forward within
+
+
+
+
+log(1 + NO_FLWS) ,
+
+(5)
+
+normalizing within each plant species rather than globally, as absolute flower counts are not directly compara-
+
+Algorithm 3 BuildReplicateGroups — assemble the watch-level replicate count vector yg for every (plot, year, plant,
+pollinator) group
+Require: positive interactions E + , harmonized visitation table vis
+Ensure: list of groups g, each with replicate vector yg and replicate count Kg
+1: watchT otals ← GroupSum(E + , keys = [plot, year, plant, poll, watch], value = NO_INT)
+2: allW atches ← GroupUnique(vis, keys = [plot, year], value = WATCH)
+3: for all (plot, year, plant, poll) in GroupKeys(watchT otals) do
+4:
+watches ← allW atches[plot, year]
+5:
+yg ← [ ]
+6:
+for all w ∈ watches do
+7:
+append {NO_INT : (plot, year, plant, poll, w) ∈ watchT otals} to yg
+8:
+end for
+9:
+Kg ← |watches|
+10:
+emit group {plot, year, plant, poll, yg , Kg }
+11: end for
+
+4
+
+▷ full replicate set per plot-year
+
+▷ 0 if unrecorded on w
+
+Algorithm 4 FitDetectionProbability — pool informative groups to identify p̂, then compute a posterior mean λ̂g for
+every group
+Require: groups from Algorithm 3; grids p1 , . . . , p19 ∈ [0.05, 0.95] and λ1 , . . . , λ150 (geometric, [0.01, 80])
+Ensure: pooled detection probability p̂; posterior mean λ̂g for every group
+1: inf ormative ← {g : Kg ≥ 2}; sample up to 250 groups from inf ormative
+2: for all pi in the p-grid do
+3:
+totali ← 0
+4:
+for all g in the sampled informative groups do
+5:
+ℓ ← LogMarginalOverLamGrid(yg , {λj }, pi )
+▷ Listing 1, covers the whole λ-grid
+6:
+totali ← totali + maxj ℓj
+▷ profile out λg
+7:
+end for
+8: end for
+9: p̂ ← arg maxi totali
+10: for all g in all groups do
+11:
+ℓ ← LogMarginalOverLamGrid(yg , {λ
+Pj }, p̂)
+12:
+wj ← exp(ℓj − maxj ℓj ); wj ← wj / j wj
+▷ normalize to posterior over the λ-grid
+P
+13:
+λ̂g ← j wj λj
+▷ posterior mean
+14: end for
+15: return p̂, {λ̂g }
+
+4000
+
+Number of (plot,year,plant,pollinator) groups
+
+(a) Events per year
+(grey = no survey conducted)
+
+Interaction events
+
+3500
+3000
+2500
+2000
+1500
+1000
+500
+
+8000
+6000
+4000
+2000
+0
+
+21
+
+20
+
+P(N > 0) = 1 exp( )
+(saturates, unusable)
+normalized log(1 + )
+(used as edge weight)
+
+10000
+
+0.0
+
+0.2
+
+0.4
+0.6
+Confidence value
+
+20
+
+19
+
+20
+
+18
+
+20
+
+17
+
+20
+
+16
+
+20
+
+15
+
+20
+
+14
+
+20
+
+13
+
+20
+
+12
+
+20
+
+20
+
+20
+
+11
+
+0
+
+(b) Why we use normalized log- ,
+not raw presence probability
+
+0.8
+
+1.0
+
+Figure 1: (a) Interaction events per year; grey bars mark years with no field survey (2019–2020), representing the sampling gap that breaks
+naive calendar-year splitting. (b) Distribution of the raw N -mixture presence probability P (N > 0) (orange, saturates near 1 for almost all
+17,472 groups) versus the normalized log(1 + λ) confidence used as the edge weight (blue, retains graded variation).
+
+season), flagged via is_imputed_flowering for downstream
+sensitivity analysis. Records with no preceding observation receive a neutral confidence value of 0.5. Algorithm 6
+outlines this join-with-fallback procedure.
+
+2.6. Event stream assembly and temporal axis
+Each retained interaction is emitted as a tuple with
+elapsed time τ , plant and pollinator identifiers, and confidence weight c, i.e., (tau, plant_id, pollinator_id, c),
+
+Algorithm 5 FloweringConfidence — log-transform and within-species normalize
+Require: flowering table flw
+Ensure: flw augmented with confidence_flowering ∈ [0, 1]
+1: f lw.NO_FLWS ← FillNA(f lw.NO_FLWS, 0)
+2: f lw.log_flws ← log(1 + f lw.NO_FLWS)
+3: for all species s in f lw.PLTSP_CODE do
+4:
+S ← {r ∈ f lw : r.PLTSP_CODE = s}
+5:
+if max(S.log_flws) − min(S.log_flws) < 10−9 then
+6:
+S.confidence_flowering ← 0.5
+7:
+else
+S.log_flws − min(S.log_flws)
+8:
+S.confidence_flowering ←
+max(S.log_flws) − min(S.log_flws)
+9:
+end if
+10: end for
+11: return f lw
+
+5
+
+▷ degenerate case: no variation within species
+
+Algorithm 6 JoinWithFallback — attach flowering confidence, with last-observation-carried-forward
+Require: watch-level interactions interactions, flowering confidence table flwConf (Algorithm 5)
+Ensure: interactions augmented with confidence_flowering and is_imputed_flowering
+1: merged ← LeftJoin(interactions, f lwConf , on = [plot, year, watch, plant])
+2: merged.is_imputed_flowering ← IsNull(merged.confidence_flowering)
+3: for all r ∈ merged where r.is_imputed_flowering = true do
+4:
+cand ← {c ∈ f lwConf : c.plot = r.plot, c.year = r.year, c.plant = r.plant, c.date ≤ r.date}, sorted by date
+5:
+if cand ̸= ∅ then
+6:
+r.confidence_flowering ← cand[last].confidence_flowering
+▷ most recent prior record
+7:
+end if
+8: end for
+9: merged.confidence_flowering ← FillNA(merged.confidence_flowering, 0.5)
+▷ no prior record exists
+10: return merged
+
+Algorithm 7 BuildEventStream — assemble the final weighted temporal event stream
+Require: positive interactions E + , posterior confidences from Algorithm 4, flowering confidences from Algorithm 5
+Ensure: sorted event stream {(τ, plant_id, pollinator_id, c)}
+1: watchLevel ← GroupSum(E + , keys = [plot, year, watch, plant, poll, date], value = NO_INT)
+2: watchLevel ← LeftJoin(watchLevel, {λ̂g → confidence_posterior}, on = [plot, year, plant, poll])
+3: watchLevel ← JoinWithFallback(watchLevel, f lwConf )
+▷ Algorithm 6
+4: watchLevel.c ← watchLevel.confidence_posterior × watchLevel.confidence_flowering
+5: t0 ← min(watchLevel.date)
+6: watchLevel.τ ← (watchLevel.date − t0 ).days
+▷ continuous axis, not the WATCH ordinal
+7: return SortBy(watchLevel, τ )
+
+Algorithm 8 ChronologicalSplit — leakage-safe train/validation/test partition
+Require: event stream events from Algorithm 7; fractions trainF rac = 0.8, valF rac = 0.1
+Ensure: train, val, test, non-overlapping and chronologically ordered
+1: events ← SortBy(events, τ )
+2: n ← |events|
+3: trainEnd ← ⌊n × trainF rac⌋
+4: valEnd ← ⌊n × (trainF rac + valF rac)⌋
+5: train ← events[0 : trainEnd]
+6: val ← events[trainEnd : valEnd]
+7: test ← events[valEnd : n]
+8: return train, val, test
+
+where τ represents the elapsed days since the first survey
+observation (2011-07-12) — rather than the WATCH ordinal, which would obscure variable inter-survey durations
+and multi-year gaps — and c = confidence_posterior ×
+confidence_flowering. Watch-level totals are obtained
+by summing NO_INT across duplicate within-watch minutelevel records prior to this step. Algorithm 7 details the
+final stream assembly.
+
+Data Availability
+The processed dataset described in this article will be
+deposited upon manuscript acceptance in the Ecological
+Frontiers data community hosted by Science Data Bank
+(ScienceDB) at https://test.scidb.cn/en/c/ef, per the
+journal’s Data Paper submission requirements; the DOI
+will be added at that stage. The underlying raw data are
+publicly available from the Environmental Data Initiative
+repository as data package knb-lter-and.5216, released
+under a CC BY 4.0 license.
+
+2.7. Chronological split
+Due to the 2019–2020 survey gap, a fixed calendaryear partition boundary (e.g., train ≤ 2018, validation
+= 2019, test ≥ 2020) silently produces an empty validation split. We instead split by cumulative event volume
+along the continuous τ axis (80/10/10), as detailed in Algorithm 8, ensuring robustness against irregular sampling
+gaps. The resulting train, validation, and test partitions
+contain 16,085, 2,011, and 2,011 events, respectively, spanning 2011–2017, 2017–2018, and 2018/2021. Splitting midyear at train/validation and validation/test boundaries introduces no data leakage, as the partition strictly respects
+elapsed time τ .
+
+Declaration of generative AI and AI-assisted technologies in the manuscript preparation process
+During the preparation of this work, the authors used
+Claude for paraphrasing. The authors reviewed and edited
+the output as needed and take full responsibility for the
+content of the published article.
+Acknowledgments
+The authors sincerely acknowledge the financial assistance provided by the Department of Science and Technol6
+
+ogy (DST), Government of India, through the WISE-PDF
+(WISE KIRAN) Programme (Sanction No. DST/WISEPDF/ET-93/2024(C)). The authors also express their gratitude to the University of Kalyani for providing the research facilities, infrastructure, and institutional support
+necessary for the successful completion of this work.
+References
+[1] H.J. Andrews Experimental Forest LTER, J.A. Jones,
+R.A. Hutchinson, and V.W. Pfeiffer, “Plant-pollinator
+interactions in Willamette National Forest meadows,” Environmental Data Initiative, data package
+knb-lter-and.5216.
+[2] X. Fu, E. Seo, J. Clarke, and R.A. Hutchinson, “Link
+prediction under imperfect detection: Collaborative filtering for ecological networks,” IEEE Transactions on
+Knowledge and Data Engineering, vol. 33, no. 8, pp.
+3117–3128, 2019.
+[3] E. Seo and R. Hutchinson, “Predicting links in plantpollinator interaction networks using latent factor
+models with implicit feedback,” in Proc. AAAI Conference on Artificial Intelligence, vol. 32, no. 1, 2018.
+[4] J.A. Royle, “N -mixture models for estimating population size from spatially replicated counts,” Biometrics,
+vol. 60, no. 1, pp. 108–115, 2004.
+[5] D.I. MacKenzie, J.D. Nichols, G.B. Lachman, S.
+Droege, J.A. Royle, and C.A. Langtimm, “Estimating
+site occupancy rates when detection probabilities are
+less than one,” Ecology, vol. 83, no. 8, pp. 2248–2255,
+2002.
+[6] E. Rossi, B. Chamberlain, F. Frasca, D. Eynard, F.
+Monti, and M. Bronstein, “Temporal graph networks
+for deep learning on dynamic graphs,” in ICML Workshop on Graph Representation Learning, 2020.
+
+7
+
+

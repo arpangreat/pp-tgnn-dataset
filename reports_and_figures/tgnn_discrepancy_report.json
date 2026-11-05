@@ -1,0 +1,281 @@
+{
+  "temporal_degeneracy": {
+    "n_events": 20025,
+    "n_unique_tau_days": 210,
+    "mean_events_per_active_day": 95.35714285714286,
+    "median_events_per_active_day": 74.5,
+    "max_events_on_single_day": 318,
+    "zero_delta_tau_events": 19816,
+    "zero_delta_tau_fraction": 0.9895630461922597,
+    "inter_arrival_days_quantiles": {
+      "25%": 0.0,
+      "50%": 0.0,
+      "75%": 0.0,
+      "90%": 0.0,
+      "99%": 1.0,
+      "max": 1049.0
+    }
+  },
+  "split_leakage": {
+    "has_leakage": true,
+    "train_tau_range": [
+      0,
+      2194
+    ],
+    "val_tau_range": [
+      2194,
+      2548
+    ],
+    "test_tau_range": [
+      2548,
+      3662
+    ],
+    "train_val_boundary": {
+      "date_collision": true,
+      "shared_dates": [
+        "2017-07-14"
+      ],
+      "train_tau_max": 2194,
+      "val_tau_min": 2194,
+      "train_events_on_shared_dates": 72,
+      "val_events_on_shared_dates": 159,
+      "shared_pair_count": 28,
+      "sample_shared_pairs": [
+        "POTEGRAC->MUSCGEN3",
+        "LIGUGRAY->SYRPOPIN",
+        "ERIGALIC->EPICPUNC",
+        "ERIOLANA->ERISTENA",
+        "LIGUGRAY->ERISHIRT",
+        "POTEGRAC->APISMELL",
+        "ERIOLANA->SYRPRIBE",
+        "ERIOLANA->SYRPOPIN",
+        "ERIOLANA->ERISHIRT",
+        "LIGUGRAY->EPICPUNC"
+      ]
+    },
+    "val_test_boundary": {
+      "date_collision": true,
+      "shared_dates": [
+        "2018-07-03"
+      ],
+      "val_tau_max": 2548,
+      "test_tau_min": 2548,
+      "val_events_on_shared_dates": 157,
+      "test_events_on_shared_dates": 92,
+      "shared_pair_count": 31,
+      "sample_shared_pairs": [
+        "COLLPARV->BOMBMIXT",
+        "ORTHIMBR->BOMBMIXT",
+        "VICIAMER->BOMBMIXT",
+        "GILICAPI->SYRPSPXX",
+        "LUPILAXI->BOMBMIXT",
+        "ERIOLANA->SYRPOPIN",
+        "GILICAPI->LEPIDOPT",
+        "ERIOLANA->HESPCOLO",
+        "LIGUGRAY->SYRPSPXX",
+        "DRYMGLAN->SYRPHIDA"
+      ]
+    }
+  },
+  "node_turnover": {
+    "train": {
+      "n_events": 16020,
+      "n_plants": 138,
+      "n_polls": 679,
+      "n_pairs": 3779
+    },
+    "val": {
+      "n_events": 2002,
+      "n_plants": 68,
+      "n_polls": 204,
+      "unseen_plants": 5,
+      "unseen_plants_pct": 7.352941176470589,
+      "unseen_polls": 69,
+      "unseen_polls_pct": 33.82352941176471
+    },
+    "test": {
+      "n_events": 2003,
+      "n_plants": 70,
+      "n_polls": 137,
+      "unseen_plants": 4,
+      "unseen_plants_pct": 5.714285714285714,
+      "unseen_polls": 78,
+      "unseen_polls_pct": 56.934306569343065,
+      "recurrent_events": 1256,
+      "recurrent_events_pct": 62.705941088367446,
+      "semi_novel_events": 172,
+      "semi_novel_events_pct": 8.587119321018474,
+      "inductive_events": 575,
+      "inductive_events_pct": 28.706939590614077
+    }
+  },
+  "weight_analysis": {
+    "n_events": 20025,
+    "c_summary": {
+      "mean": 0.08245275366947336,
+      "std": 0.0875969437321795,
+      "median": 0.053281670128275366,
+      "iqr": [
+        0.025310775935028715,
+        0.10939362808492742
+      ],
+      "min": 0.0,
+      "max": 0.9151547837544762,
+      "fraction_below_0_01": 0.08754057428214732,
+      "fraction_below_0_05": 0.4784019975031211,
+      "fraction_above_0_5": 0.004244694132334582
+    },
+    "confidence_posterior_median": 0.18829535818069093,
+    "confidence_flowering_median": 0.3186211916593413,
+    "imputed_flowering_count": 49,
+    "imputed_flowering_fraction": 0.002446941323345818,
+    "pearson_corr_c_vs_raw_visits": 0.353163776072361,
+    "pearson_corr_c_post_vs_raw_visits": 0.46496865682836286
+  },
+  "permutation": {
+    "original_ap": 0.8675807970358965,
+    "original_auc": 0.8648018985002277,
+    "permutation_runs": [
+      {
+        "seed": "original",
+        "ap": 0.8675807970358965,
+        "auc": 0.8648018985002277
+      },
+      {
+        "seed": 42,
+        "ap": 0.8873442667726765,
+        "auc": 0.8782872869926263
+      },
+      {
+        "seed": 100,
+        "ap": 0.8811203397031641,
+        "auc": 0.8772080272003377
+      },
+      {
+        "seed": 2024,
+        "ap": 0.872270524805668,
+        "auc": 0.8642800900994987
+      },
+      {
+        "seed": 777,
+        "ap": 0.8850395157603294,
+        "auc": 0.8801796057785514
+      },
+      {
+        "seed": 999,
+        "ap": 0.8732373961780403,
+        "auc": 0.8708554741527249
+      }
+    ],
+    "ap_mean": 0.8798024086439756,
+    "ap_std": 0.00609708979907683,
+    "ap_min": 0.872270524805668,
+    "ap_max": 0.8873442667726765,
+    "ap_spread": 0.015073741967008503,
+    "auc_mean": 0.8741620968447478,
+    "auc_std": 0.00584966854097244,
+    "auc_spread": 0.015899515679052678
+  },
+  "hiatus": {
+    "test_years_present": [
+      2018,
+      2021
+    ],
+    "hiatus_duration_days": 1049,
+    "pre_hiatus_n_events": 1740,
+    "post_hiatus_n_events": 263,
+    "pre_hiatus_ap": 0.8759188818025375,
+    "pre_hiatus_auc": 0.8796358501783592,
+    "post_hiatus_ap": 0.5957750212937025,
+    "post_hiatus_auc": 0.6822492735184836,
+    "ap_drop_absolute": 0.280143860508835,
+    "ap_drop_percent": 31.9828543862797,
+    "auc_drop_absolute": 0.19738657665987558,
+    "auc_drop_percent": 22.439578448269533
+  },
+  "topology_eval": {
+    "recurrent_edges": {
+      "n_pairs": 1256,
+      "ap": 0.9368246817287791,
+      "auc": 0.9491108285325977
+    },
+    "semi_novel_edges": {
+      "n_pairs": 172,
+      "ap": 0.8617880853014848,
+      "auc": 0.8598566792861007
+    },
+    "inductive_edges": {
+      "n_pairs": 575,
+      "ap": 0.7760181449324084,
+      "auc": 0.750392438563327
+    },
+    "recurrent_vs_inductive_ap_gap": 0.1608065367963707,
+    "recurrent_vs_inductive_auc_gap": 0.1987183899692706
+  },
+  "negatives": {
+    "tier1_uniform_random": {
+      "ap": 0.8789116897970005,
+      "auc": 0.8718543502768813,
+      "description": "Standard benchmark: uniform random sampling over all 800 pollinators"
+    },
+    "tier2_seasonal_meadow_active": {
+      "ap": 0.6613436842026335,
+      "auc": 0.6706697317977103,
+      "description": "Ecological partner choice: sampled only from pollinators co-active in same meadow-year"
+    },
+    "negative_realism_gap": {
+      "ap_drop": 0.21756800559436706,
+      "auc_drop": 0.20118461847917102
+    },
+    "tier3_grounded_structural_absences": {
+      "n_grounded_evaluated": 500,
+      "mean_predicted_absence_score": 0.6207967400550842,
+      "median_predicted_absence_score": 0.679161787033081
+    }
+  },
+  "weighted_loss_cmp": {
+    "unweighted_bce": {
+      "test_ap": 0.8458993358544187,
+      "test_auc": 0.8520375951300209,
+      "test_loss": 0.5091156282208182
+    },
+    "confidence_weighted_bce": {
+      "test_ap": 0.7855752200558499,
+      "test_auc": 0.8119165485421393,
+      "test_loss": 1.0895483927293257
+    },
+    "ap_delta": -0.06032411579856878,
+    "auc_delta": -0.040121046587881515
+  },
+  "corrected_dataset": {
+    "split_info": {
+      "train_n": 15948,
+      "train_pct": 0.7964044943820224,
+      "train_date_range": [
+        "2011-07-12",
+        "2017-07-13"
+      ],
+      "train_tau_max": 2193,
+      "val_n": 2166,
+      "val_pct": 0.10816479400749064,
+      "val_date_range": [
+        "2017-07-14",
+        "2018-07-03"
+      ],
+      "val_tau_min": 2194,
+      "val_tau_max": 2548,
+      "test_n": 1911,
+      "test_pct": 0.09543071161048688,
+      "test_date_range": [
+        "2018-07-05",
+        "2021-07-21"
+      ],
+      "test_tau_min": 2550
+    },
+    "train_file": "data/processed/corrected/events_train_clean.csv",
+    "val_file": "data/processed/corrected/events_val_clean.csv",
+    "test_file": "data/processed/corrected/events_test_clean.csv",
+    "grounded_negatives_file": "data/processed/corrected/grounded_structural_negatives.csv",
+    "n_grounded_negatives": 24942
+  }
+}
